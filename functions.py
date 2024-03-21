@@ -3,30 +3,35 @@ import socket
 from datetime import datetime
 from dbfunctions import writeToDB
 
+def createHeader():
+    #add code to rotate through created headers
+    return
+
 def onionHandler(url):
     if url.endswith(".onion"):
         print("\nOnion detected\n")
         writeToDB(url, "onions", "url")
         return url
     
-def getIP(domain):
+def stripURL(domain):
     domain = str(domain)
     print(domain)
     if domain.startswith("https") is True:
-        domain = domain.removeprefix("https://")
-        domain = domain.removesuffix("/")
+        domain = (domain.removeprefix("https://")).removesuffix("/")
         print("https removed")
     elif domain.startswith("http") is True:
-        domain = domain.removeprefix("http://")
-        domain = domain.removesuffix("/")
+        domain = (domain.removeprefix("http://")).removesuffix("/")
         print("http removed")
     print("This has no http/s-> "+ domain)
+    return domain
+    
+def getIP(domain):
     target = socket.gethostbyname(domain) 
     # returns IPV4 address
     return target
     
 def domainScout(domain):
-    target = getIP(domain)
+    target = getIP(stripDomain(domain))
 
     print("Scanning Target: " + target)
     print("Scanning started at:" + str(datetime.now()))

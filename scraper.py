@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from dbfunctions import writeToDB#, deleteDBDupes
-from functions import onionHandler, domainScout
+from functions import onionHandler, domainScout, getIP, stripURL
 
 
 startUrl = input("Start URL: ")
@@ -37,11 +37,11 @@ while len(urlList) > i and int(numberOfCrawls) >= i:
             if r.startswith("http") and r not in urlList:
                 urlList.append(r)
                 writeToDB(r, "webpages", "url")
-                if r.endswith(".com/") or r.endswith(".edu/") or r.endswith(".org/"):
+                if r.endswith(".com/") or r.endswith(".edu/") or r.endswith(".org/") or r.endswith(".net/"):
                     writeToDB(r, "domains", "url")
                     print("\nDomain written to DB\n")
-                    print("attempting to port scan")
-                    domainScout(r)
+                    print(r + " " + getIP(stripURL(r)))
+                    #domainScout(r)
                     #deleteDBDupes()
     i = i + 1
     
