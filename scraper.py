@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from dbfunctions import connectDB
+from dbfunctions import connectDB, disconnectDB
+
 
 startUrl = input("Start URL: ")
 i = 0
@@ -28,4 +29,8 @@ while len(urlList) > 0:
                 urlList.append(r)
                 file.write(r+"\n")
                 #writeToDB()
+    
+    if i == 2000:
+        disconnectDB()
+        break
                 
