@@ -1,9 +1,9 @@
-def onionFinder(url, i, listofurls):
+from dbfunctions import writeToDB
+
+def onionFinder(url):
     if url.endswith(".onion"):
         print("\nOnion detected\n")
-        file = open('onionURLs.txt','a')
-        file.write(url)
-        file.close()
-        url = listofurls[ i + 1 ]
-        i = i + 1
-        return url, i, listofurls
+        writeToDB(url, "onions", "url")
+        print("\n\n\nONION WRITTEN TO DB\n\n\n")
+        
+        return url

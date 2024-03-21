@@ -14,7 +14,10 @@ while len(urlList) > i and int(numberOfCrawls) >= i:
     print("\nLength of urlList: " + str(len(urlList)))
     print("Number of sites crawled:" + str(i) + "\n")
     
-    onionFinder(url, i, urlList)
+    while url.endswith("onion") or url.endswith("onion/"):
+        onionFinder(url)
+        url = urlList[ i + 1 ]
+        i = i + 1
     
     print("Now scanning: " + url)
     
