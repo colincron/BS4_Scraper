@@ -8,7 +8,7 @@ numberOfCrawls = input("How many crawls do you want to do? ")
 i = 0
 urlList = [startUrl,]
 
-while len(urlList) >= i and int(numberOfCrawls) >= i: 
+while len(urlList) > i and int(numberOfCrawls) >= i: 
     url = urlList[i]
     print("\nLength of urlList: " + str(len(urlList)))
     print("Number of sites crawled:" + str(i) + "\n")
@@ -37,5 +37,6 @@ while len(urlList) >= i and int(numberOfCrawls) >= i:
                 writeToDB(r)     
     
     i = i + 1
+    
 else:
     print("All done!")
