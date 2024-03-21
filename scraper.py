@@ -4,21 +4,27 @@ from dbfunctions import writeToDB
 
 
 startUrl = input("Start URL: ")
+numberOfCrawls = input("How many crawls do you want to do? ")
 i = 0
 urlList = [startUrl,]
 
-while len(urlList) > 0: 
+while len(urlList) >= i and int(numberOfCrawls) >= i: 
     url = urlList[i]
-    print("Length of urlList: " + str(len(urlList)) + "\n")
+    print("\nLength of urlList: " + str(len(urlList)))
+    print("Number of sites crawled:" + str(i) + "\n")
     if url.endswith(".onion"):
-            file = open('onionURLs.txt','a')
-            file.write(url)
-            url = urlList[ i + 1 ]
-            i = i + 1
+        print("\nOnion detected\n")
+        file = open('onionURLs.txt','a')
+        file.write(url)
+        url = urlList[ i + 1 ]
+        i = i + 1
     print("Now scanning: " + url)
-    i = i + 1
     
-    response = requests.get(url)
+    
+    try:
+        response = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        print("Connection refused")
     htmlData = response.content
     parsedData = BeautifulSoup(htmlData, "lxml") #lxml is fast and lenient
     anchors = parsedData.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
@@ -27,9 +33,9 @@ while len(urlList) > 0:
         references = [a["href"]]
         for r in references:
             if r.startswith("http") and r not in urlList:
-                print(r + "\n")
                 urlList.append(r)
-                writeToDB(r)
-    if i == 2000:
-        break
-                
+                writeToDB(r)     
+    
+    i = i + 1
+else:
+    print("All done!")
