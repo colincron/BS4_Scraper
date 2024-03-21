@@ -1,6 +1,8 @@
 from secret_file import pword
 import psycopg2
 
+#createDB()
+
 def writeToDB(urlToSave, table, column):
     conn = psycopg2.connect(database = "ScrapeDB",
                             user="postgres",
