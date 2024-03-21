@@ -9,7 +9,7 @@ def onionHandler(url):
         writeToDB(url, "onions", "url")
         return url
     
-def domainScout(domain):
+def getIP(domain):
     domain = str(domain)
     print(domain)
     if domain.startswith("https") is True:
@@ -22,16 +22,22 @@ def domainScout(domain):
         print("http removed")
     print("This has no http/s-> "+ domain)
     target = socket.gethostbyname(domain) 
+    # returns IPV4 address
+    return target
+    
+def domainScout(domain):
+    target = getIP(domain)
 
     print("Scanning Target: " + target)
     print("Scanning started at:" + str(datetime.now()))
   
     try: 
-        for port in range(1,65535):
+        for port in range(1,1024):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            socket.setdefaulttimeout(1)     
+            socket.setdefaulttimeout(.25)     
             # returns error indicator
             result = s.connect_ex((target,port))
+            print(result)
             if result ==0:
                 print("Port {} is open".format(port))
             s.close()
