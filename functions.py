@@ -31,7 +31,7 @@ def getIP(domain):
     return target
     
 def domainScout(domain):
-    target = getIP(stripDomain(domain))
+    target = getIP(stripURL(domain))
 
     print("Scanning Target: " + target)
     print("Scanning started at:" + str(datetime.now()))
