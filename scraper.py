@@ -16,10 +16,10 @@ while len(urlList) > i and int(numberOfCrawls) >= i:
         print("\nOnion detected\n")
         file = open('onionURLs.txt','a')
         file.write(url)
+        file.close()
         url = urlList[ i + 1 ]
         i = i + 1
     print("Now scanning: " + url)
-    
     
     try:
         response = requests.get(url)
@@ -34,7 +34,10 @@ while len(urlList) > i and int(numberOfCrawls) >= i:
         for r in references:
             if r.startswith("http") and r not in urlList:
                 urlList.append(r)
-                writeToDB(r)     
+                writeToDB(r, "webpages", "url")
+                if r.endswith(".com/") or r.endswith(".edu/") or r.endswith(".org/"):
+                    writeToDB(r, "domains", "url")
+                    print("\nDomain written to DB\n")
     
     i = i + 1
     

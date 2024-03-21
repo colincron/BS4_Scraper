@@ -1,7 +1,7 @@
 from secret_file import pword
 import psycopg2
 
-def writeToDB(urlToSave):
+def writeToDB(urlToSave, table, column):
     conn = psycopg2.connect(database = "ScrapeDB",
                             user="postgres",
                             host="localhost",
@@ -9,10 +9,10 @@ def writeToDB(urlToSave):
                             port = 5432)
     cur = conn.cursor()
     urlToSave = str(urlToSave)
-    sql = "INSERT INTO Websites (URL) VALUES ('{}');".format(urlToSave)
+    sql = "INSERT INTO {} ({}) VALUES ('{}');".format(table, column, urlToSave)
     try:
         with  conn.cursor() as cur:
-            cur.execute(sql, ("Websites"))
+            cur.execute(sql, (table))
             conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
         cur.close()
