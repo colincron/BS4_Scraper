@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from dbfunctions import writeToDB, deleteDBDupes
-from functions import onionFinder
+from functions import onionHandler
 
 
 startUrl = input("Start URL: ")
@@ -15,7 +15,7 @@ while len(urlList) > i and int(numberOfCrawls) >= i:
     print("Number of sites crawled:" + str(i) + "\n")
     
     while url.endswith("onion") or url.endswith("onion/"):
-        onionFinder(url)
+        onionHandler(url)
         url = urlList[ i + 1 ]
         i = i + 1
     
