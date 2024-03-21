@@ -1,12 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
-from dbfunctions import connectToDB
+from dbfunctions import connectDB
 
 startUrl = input("Start URL: ")
 i = 0
 urlList = [startUrl,]
 
-connectToDB()
+connectDB()
 
 while len(urlList) > 0: 
     url = urlList[i]
@@ -16,7 +16,7 @@ while len(urlList) > 0:
     
     response = requests.get(url)
     htmlData = response.content
-    parsedData = BeautifulSoup(htmlData, "html.parser") #lxml is fast and lenient
+    parsedData = BeautifulSoup(htmlData, "lxml") #lxml is fast and lenient
     anchors = parsedData.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
     
     file = open('urls.txt','a')
