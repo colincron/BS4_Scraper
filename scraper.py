@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from dbfunctions import writeToDB
+from dbfunctions import writeToDB, deleteDBDupes
+from functions import onionFinder
 
 
 startUrl = input("Start URL: ")
@@ -12,19 +13,16 @@ while len(urlList) > i and int(numberOfCrawls) >= i:
     url = urlList[i]
     print("\nLength of urlList: " + str(len(urlList)))
     print("Number of sites crawled:" + str(i) + "\n")
-    if url.endswith(".onion"):
-        print("\nOnion detected\n")
-        file = open('onionURLs.txt','a')
-        file.write(url)
-        file.close()
-        url = urlList[ i + 1 ]
-        i = i + 1
+    
+    onionFinder(url, i, urlList)
+    
     print("Now scanning: " + url)
     
     try:
         response = requests.get(url)
     except requests.exceptions.ConnectionError:
         print("Connection refused")
+    
     htmlData = response.content
     parsedData = BeautifulSoup(htmlData, "lxml") #lxml is fast and lenient
     anchors = parsedData.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
@@ -38,7 +36,7 @@ while len(urlList) > i and int(numberOfCrawls) >= i:
                 if r.endswith(".com/") or r.endswith(".edu/") or r.endswith(".org/"):
                     writeToDB(r, "domains", "url")
                     print("\nDomain written to DB\n")
-    
+                    deleteDBDupes()
     i = i + 1
     
 else:
