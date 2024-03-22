@@ -14,15 +14,22 @@ class Domain:
         return
         
     def addIP(self):
+        target = ""
         if self.name.startswith("https") is True:
-            self.name = (self.name.removeprefix("https://")).removesuffix("/")
-            print("https removed = " + self.name)
-            target = socket.gethostbyname(self.name) 
+            try:
+                self.name = (self.name.removeprefix("https://")).removesuffix("/")
+                print("https removed = " + self.name)
+                target = socket.gethostbyname(self.name)
+            except:
+                print("Not this time.")
         elif self.name.startswith("http") is True:
-            self.name = (self.name.removeprefix("http://")).removesuffix("/")
-            print("http removed")
-            print("This has no https-> "+ self.name)
-            print("Self.name: " + self.name)
+            try:
+                self.name = (self.name.removeprefix("http://")).removesuffix("/")
+                print("http removed")
+                print("This has no https-> "+ self.name)
+                print("Self.name: " + self.name)
+            except:
+                print("Not this time.")
             try:
                 target = socket.gethostbyname(str(self.name)) 
             except socket.gaierror:
