@@ -1,6 +1,4 @@
 env
 __pycache__
-urls.txt
 secret_file.py 
 .vscode
-onionURLs.txt
