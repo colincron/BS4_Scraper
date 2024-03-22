@@ -3,10 +3,13 @@ from bs4 import BeautifulSoup
 from functions import onionHandler
 from classes import Domain
 import threading
+import time
 
 def mainCrawler():
     startUrl = input("Start URL: ")
+    time.sleep(10)
     numberOfCrawls = input("How many crawls do you want to do? ")
+    time.sleep(10)
     #databaseCreate = input("Do you need to create a database?")
     i = 0
     urlList = [startUrl,]
