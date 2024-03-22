@@ -21,13 +21,14 @@ class Domain:
         elif self.name.startswith("http") is True:
             self.name = (self.name.removeprefix("http://")).removesuffix("/")
             print("http removed")
-            print("This has no http/s-> "+ self.name)
-            print("Self.name " + self.name)
-            target = socket.gethostbyname(self.name) 
+            print("This has no https-> "+ self.name)
+            print("Self.name: " + self.name)
+            try:
+                target = socket.gethostbyname(str(self.name)) 
+            except socket.gaierror:
+                print("gaierror :(")
         # returns IPV4 address
         return target
-    
- 
     
     def writeToDatabase(self, table):
         self.ip = self.addIP()
