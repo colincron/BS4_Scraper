@@ -39,7 +39,7 @@ def mainCrawler():
             for r in references:
                 if r.startswith("http") and r not in urlList:
                     urlList.append(r)
-                    if r.endswith(".com/" or ".net/" or ".edu/" or ".org/"):
+                    if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/"):
                         r = Domain(r)
                         r.writeToDatabase("domains")
                         print("\nDomain " + r.name + " written to DB\n")
