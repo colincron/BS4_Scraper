@@ -2,14 +2,13 @@ import requests
 from bs4 import BeautifulSoup
 from functions import onionHandler
 from classes import Domain
-import threading
 import time
 
 def mainCrawler():
     startUrl = input("Start URL: ")
     time.sleep(10)
     numberOfCrawls = input("How many crawls do you want to do? ")
-    time.sleep(5)
+    time.sleep(10)
     #databaseCreate = input("Do you need to create a database?")
     i = 0
     urlList = [startUrl,]
@@ -49,14 +48,3 @@ def mainCrawler():
     else:
         print("All done!")
 
-if __name__ =="__main__":
-    t1 = threading.Thread(target=mainCrawler)
-    t2 = threading.Thread(target=mainCrawler)
- 
-    t1.start()
-    t2.start()
- 
-    t1.join()
-    t2.join()
- 
-    print("Done!")
