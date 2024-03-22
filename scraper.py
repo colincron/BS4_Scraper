@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from dbfunctions import writeToDB#, deleteDBDupes
-from functions import onionHandler, domainScout, getIP, stripURL
+from functions import onionHandler
+from classes import Domain
 
 
 startUrl = input("Start URL: ")
@@ -30,19 +30,16 @@ while len(urlList) > i and int(numberOfCrawls) >= i:
     htmlData = response.content
     parsedData = BeautifulSoup(htmlData, "lxml") #lxml is fast and lenient
     anchors = parsedData.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
-    
+
     for a in anchors:
         references = [a["href"]]
         for r in references:
             if r.startswith("http") and r not in urlList:
                 urlList.append(r)
-                writeToDB(r, "webpages", "url")
-                if r.endswith(".com/") or r.endswith(".edu/") or r.endswith(".org/") or r.endswith(".net/"):
-                    writeToDB(r, "domains", "url")
-                    print("\nDomain written to DB\n")
-                    print(r + " " + getIP(stripURL(r)))
-                    #domainScout(r)
-                    #deleteDBDupes()
+                if r.endswith(".com/" or ".net/" or ".edu/" or ".org/"):
+                    r = Domain(r)
+                    r.writeToDatabase("domains")
+                    print("\nDomain " + r.name + " written to DB\n")
     i = i + 1
     
 else:

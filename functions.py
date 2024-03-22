@@ -13,23 +13,6 @@ def onionHandler(url):
         writeToDB(url, "onions", "url")
         return url
     
-def stripURL(domain):
-    domain = str(domain)
-    print(domain)
-    if domain.startswith("https") is True:
-        domain = (domain.removeprefix("https://")).removesuffix("/")
-        print("https removed")
-    elif domain.startswith("http") is True:
-        domain = (domain.removeprefix("http://")).removesuffix("/")
-        print("http removed")
-    print("This has no http/s-> "+ domain)
-    return domain
-    
-def getIP(domain):
-    target = socket.gethostbyname(domain) 
-    # returns IPV4 address
-    return target
-    
 def domainScout(domain):
     target = getIP(stripURL(domain))
 
