@@ -1,5 +1,5 @@
 import psycopg2
-from secret_file import pword
+from config import secret
 import socket
 
 
@@ -42,7 +42,7 @@ class Domain:
         conn = psycopg2.connect(database = "ScrapeDB",
                             user="postgres",
                             host="localhost",
-                            password = pword,
+                            password = secret,
                             port = 5432)
         cur = conn.cursor()
         #urlToSave = str(urlToSave)

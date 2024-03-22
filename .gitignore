@@ -1,4 +1,4 @@
 env
 __pycache__
-secret_file.py 
+config.py
 .vscode
