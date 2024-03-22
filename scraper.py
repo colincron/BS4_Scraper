@@ -3,12 +3,14 @@ from bs4 import BeautifulSoup
 from functions import onionHandler
 from classes import Domain
 import time
+import socket
 
 def mainCrawler():
+    response = ""
     startUrl = input("Start URL: ")
-    time.sleep(10)
+    #time.sleep(10)
     numberOfCrawls = input("How many crawls do you want to do? ")
-    time.sleep(10)
+    #time.sleep(10)
     #databaseCreate = input("Do you need to create a database?")
     i = 0
     urlList = [startUrl,]
@@ -29,22 +31,29 @@ def mainCrawler():
             response = requests.get(url)
         except requests.exceptions.ConnectionError:
             print("Connection refused")
+        except socket.gaierror:
+            print("Connection refused")
         
-        htmlData = response.content
-        parsedData = BeautifulSoup(htmlData, "lxml") #lxml is fast and lenient
-        anchors = parsedData.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
+            
+        if response:
+            htmlData = response.content
+            parsedData = BeautifulSoup(htmlData, "lxml") #lxml is fast and lenient
+            anchors = parsedData.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
 
-        for a in anchors:
-            references = [a["href"]]
-            for r in references:
-                if r.startswith("http") and r not in urlList:
-                    urlList.append(r)
-                    if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/"):
-                        r = Domain(r)
-                        r.writeToDatabase("domains")
-                        print("\nDomain " + r.name + " written to DB\n")
+            for a in anchors:
+                references = [a["href"]]
+                for r in references:
+                    if r.startswith("http") and r not in urlList:
+                        urlList.append(r)
+                        if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/"):
+                            r = Domain(r)
+                            r.addServerInfo()
+                            r.writeToDatabase("domains")
+                            print("\nDomain " + r.name + " written to DB\n")
         i = i + 1
         
     else:
         print("All done!")
 
+
+mainCrawler()
