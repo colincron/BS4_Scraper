@@ -9,7 +9,7 @@ def mainCrawler():
     startUrl = input("Start URL: ")
     time.sleep(10)
     numberOfCrawls = input("How many crawls do you want to do? ")
-    time.sleep(10)
+    time.sleep(5)
     #databaseCreate = input("Do you need to create a database?")
     i = 0
     urlList = [startUrl,]
