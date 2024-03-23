@@ -2,7 +2,7 @@ import psycopg2
 from config import secret
 import socket
 import requests
-from functions import tstamp 
+from functions import tstamp, printError
 
 
 class Domain:
@@ -14,7 +14,7 @@ class Domain:
     
     def __init__(self, name):
         self.name = name
-        print(tstamp() + " self.name = " + self.name)
+        #print(tstamp() + " self.name = " + self.name)
         return
         
     def addIP(self):
@@ -33,10 +33,10 @@ class Domain:
                 print(tstamp() + " Not this time.")
             try:
                 target = socket.gethostbyname(str(self.name)) 
-            except socket.gaierror:
-                print(tstamp() + " gaierror :(")
+            except socket.gaierror as error:
+                printError(error)
         # returns IPV4 address
-        return 0
+        return target
     
     def addServerInfo(self):
         url = self.name
@@ -48,19 +48,17 @@ class Domain:
             print(tstamp() + " X-Frame-Options: " + xframe)
             self.server = server
             self.xframe = xframe
-        except KeyError:
-            print(" \n" + tstamp() + " Key Error!\n")
+        except KeyError as error:
+            printError(error)
             return 0
-        except requests.exceptions.ConnectionError:
-            print(" \n" + tstamp() + " Host refused connection. Probably too many retries\n")
+        except requests.exceptions.ConnectionError as error:
+            printError(error)
             return 0
-        except socket.gaierror:
-            print("\n" + tstamp() + " Gai Error\n")
+        except socket.gaierror as error:
+            print("\n" + tstamp() + " " + error)
             return 0
-        
         
     def writeToDatabase(self, table):
-        self.ip = self.addIP()
         conn = psycopg2.connect(database = "ScrapeDB",
                             user="postgres",
                             host="localhost",
@@ -73,12 +71,42 @@ class Domain:
             with  conn.cursor() as cur:
                 cur.execute(sql, (table))
                 conn.commit()
+                print(tstamp() + " Written to DB")
         except (Exception, psycopg2.DatabaseError) as error:
             cur.close()
             conn.close()
             print(error)
-            
         cur.close()
         conn.close()
         return 0
-            
+    
+    def checkDBForDomain(self):
+        self.ip = self.addIP()
+        conn = psycopg2.connect(database = "ScrapeDB",
+                            user="postgres",
+                            host="localhost",
+                            password = secret,
+                            port = 5432)
+        cur = conn.cursor()
+        sql = "SELECT url from domains where url @@ to_tsquery('{}');".format(self.name)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(sql)
+                result = cur.fetchall()
+                conn.commit()
+
+                try: 
+                    if str(*result[0]) == self.name:
+                        print("\n" + tstamp() +" Dupe found!\n")
+                        return
+                except:
+                    self.writeToDatabase("domains")
+                    return
+                
+        except (Exception, psycopg2.DatabaseError) as error:
+            cur.close()
+            conn.close()
+            print(error) 
+        cur.close()
+        conn.close()
+        return

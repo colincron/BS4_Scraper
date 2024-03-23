@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from functions import onionHandler, tstamp 
+from functions import onionHandler, tstamp, createRequestHeader, printError
 from classes import Domain
 import socket
 
@@ -26,16 +26,18 @@ def mainCrawler():
         
         print(tstamp() + " Now scanning: " + url)
         
+        header = createRequestHeader()
+        
         try:
-            response = requests.get(url)
-        except requests.exceptions.ConnectionError:
-            print(tstamp() + " Connection refused")
-        except socket.gaierror:
-            print(tstamp() + " Connection refused")
-        except requests.exceptions.TooManyRedirects:
-            print(tstamp() + " Too many redirects, dude!")
-        except requests.exceptions.InvalidURL:
-            print(tstamp() + " Invalid URL")
+            response = requests.get(url, headers=header)
+        except requests.exceptions.ConnectionError as error:
+            printError(error)
+        except socket.gaierror as error:
+            printError(error)
+        except requests.exceptions.TooManyRedirects as error:
+            printError(error)
+        except requests.exceptions.InvalidURL as error:
+            printError(error)
         
             
         if response:
@@ -51,8 +53,8 @@ def mainCrawler():
                         if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/"):
                             r = Domain(r)
                             r.addServerInfo()
-                            r.writeToDatabase("domains")
-                            print("\n" + tstamp() + " Domain " + r.name + " written to DB\n")
+                            r.checkDBForDomain()
+                            
         i = i + 1
         
     else:

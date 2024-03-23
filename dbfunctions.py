@@ -23,3 +23,4 @@ def writeToDB(urlToSave, table, column):
     cur.close()
     conn.close()
     return 0
+
