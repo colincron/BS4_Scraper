@@ -34,6 +34,8 @@ def mainCrawler():
             print(tstamp() + " Connection refused")
         except requests.exceptions.TooManyRedirects:
             print(tstamp() + " Too many redirects, dude!")
+        except requests.exceptions.InvalidURL:
+            print(tstamp() + " Invalid URL")
         
             
         if response:
