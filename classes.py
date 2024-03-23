@@ -10,6 +10,7 @@ class Domain:
     name = ""
     ip = ""
     server = ""
+    xframe = ""
     
     def __init__(self, name):
         self.name = name
@@ -21,15 +22,12 @@ class Domain:
         if self.name.startswith("https") is True:
             try:
                 self.name = (self.name.removeprefix("https://")).removesuffix("/")
-                print(tstamp() + " https removed = " + self.name)
                 target = socket.gethostbyname(self.name)
             except:
-                print(tstamp() + " Not this time.")
+                return 0
         elif self.name.startswith("http") is True:
             try:
                 self.name = (self.name.removeprefix("http://")).removesuffix("/")
-                print(tstamp() + " http removed")
-                print(tstamp() + " This has no https-> "+ self.name)
                 print(tstamp() + " Self.name: " + self.name)
             except:
                 print(tstamp() + " Not this time.")
@@ -38,25 +36,28 @@ class Domain:
             except socket.gaierror:
                 print(tstamp() + " gaierror :(")
         # returns IPV4 address
-        return target
+        return 0
     
     def addServerInfo(self):
         url = self.name
         try: 
             response = requests.head(url)
             server = response.headers['Server']
+            xframe = response.headers['X-Frame-Options']
             print(tstamp() + " Server: " + server)
+            print(tstamp() + " X-Frame-Options: " + xframe)
             self.server = server
-            return server
+            self.xframe = xframe
         except KeyError:
-            print(" \n" + tstamp() + "Key Error!\n")
+            print(" \n" + tstamp() + " Key Error!\n")
             return 0
         except requests.exceptions.ConnectionError:
-            print(" \n" + tstamp() + "Host refused connection. Probably too many retries\n")
+            print(" \n" + tstamp() + " Host refused connection. Probably too many retries\n")
             return 0
         except socket.gaierror:
-            print("\n" + tstamp() + "Gai Error\n")
+            print("\n" + tstamp() + " Gai Error\n")
             return 0
+        
         
     def writeToDatabase(self, table):
         self.ip = self.addIP()
@@ -67,7 +68,7 @@ class Domain:
                             port = 5432)
         cur = conn.cursor()
         #urlToSave = str(urlToSave)
-        sql = "INSERT INTO {} (url, ip, servertype) VALUES ('{}','{}','{}');".format(table, self.name, self.ip, self.server)
+        sql = "INSERT INTO {} (url, ip, servertype, xframe) VALUES ('{}','{}','{}','{}');".format(table, self.name, self.ip, self.server, self.xframe)
         try:
             with  conn.cursor() as cur:
                 cur.execute(sql, (table))

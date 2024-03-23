@@ -50,7 +50,7 @@ def mainCrawler():
                             r = Domain(r)
                             r.addServerInfo()
                             r.writeToDatabase("domains")
-                            print("\n" + tstamp() + "Domain " + r.name + " written to DB\n")
+                            print("\n" + tstamp() + " Domain " + r.name + " written to DB\n")
         i = i + 1
         
     else:
