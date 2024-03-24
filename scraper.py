@@ -3,13 +3,13 @@ from bs4 import BeautifulSoup
 from functions import onionHandler, tstamp, createRequestHeader, printError
 from classes import Domain
 import socket
+import sys
 
 def mainCrawler():
     response = ""
     startUrl = input(tstamp() + " Start URL: ")
-    #time.sleep(10)
-    numberOfCrawls = input(tstamp() + " How many crawls do you want to do? ")
-    #time.sleep(10)
+    #numberOfCrawls = input(tstamp() + " How many crawls do you want to do? ")
+    numberOfCrawls = 5000
     #databaseCreate = input("Do you need to create a database?")
     i = 0
     urlList = [startUrl,]
@@ -38,6 +38,8 @@ def mainCrawler():
             printError(error)
         except requests.exceptions.InvalidURL as error:
             printError(error)
+        except requests.exceptions.InvalidSchema as error:
+            printError(error)
         
             
         if response:
@@ -51,7 +53,7 @@ def mainCrawler():
                     if r.startswith("http") and r not in urlList:
                         urlList.append(r)
                         if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/" or ".co/" or ".uk/" or ".us/"
-                                       or ".ai/" or ".io/" or ".info/" or ".xyz/" or ".ly/" or ".site/" or ".me/"):
+                                       or ".ai/" or ".io/" or ".info/" or ".xyz/" or ".ly/" or ".site/" or ".me/" or ".bg/"):
                             r = Domain(r)
                             r.addServerInfo()
                             r.checkDBForDomain()
@@ -59,7 +61,7 @@ def mainCrawler():
         i = i + 1
         
     else:
-        print(tstamp() + " All done!")
+        sys.exit("All done!")
 
 
 mainCrawler()
