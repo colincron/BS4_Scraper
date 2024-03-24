@@ -1,8 +1,5 @@
-import sys
-import socket
 from datetime import datetime
 from dbfunctions import writeToDB
-from datetime import datetime
 
 def tstamp(): 
     dt = datetime.now()

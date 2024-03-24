@@ -1,5 +1,6 @@
-from config import secret
 import psycopg2
+from config import secret
+
 
 #createDB()
 

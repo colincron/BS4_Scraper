@@ -1,11 +1,8 @@
-import psycopg2
+import psycopg2, socket, requests
 from config import secret
-import socket
-import requests
-from functions import tstamp, printError, createRequestHeader
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-
+from functions import tstamp, printError, createRequestHeader
 
 class Domain:
     

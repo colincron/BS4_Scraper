@@ -1,16 +1,13 @@
-import requests
+import socket, sys, requests
 from bs4 import BeautifulSoup
-from functions import onionHandler, tstamp, createRequestHeader, printError
 from classes import Domain
-import socket
-import sys
+from functions import onionHandler, tstamp, createRequestHeader, printError
 
 def mainCrawler():
     response = ""
     startUrl = input(tstamp() + " Start URL: ")
     #numberOfCrawls = input(tstamp() + " How many crawls do you want to do? ")
     numberOfCrawls = 5000
-    #databaseCreate = input("Do you need to create a database?")
     i = 0
     urlList = [startUrl,]
 
@@ -31,15 +28,15 @@ def mainCrawler():
         try:
             response = requests.get(url, headers=header)
         except requests.exceptions.ConnectionError as error:
-            printError(error)
+            printError("\n" + tstamp() + " " + error)
         except socket.gaierror as error:
-            printError(error)
+            printError("\n" + tstamp() + " " + error)
         except requests.exceptions.TooManyRedirects as error:
-            printError(error)
+            printError("\n" + tstamp() + " " + error)
         except requests.exceptions.InvalidURL as error:
-            printError(error)
+            printError("\n" + tstamp() + " " + error)
         except requests.exceptions.InvalidSchema as error:
-            printError(error)
+            printError("\n" + tstamp() + " " + error)
         
             
         if response:
