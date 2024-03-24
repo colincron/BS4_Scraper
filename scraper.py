@@ -28,15 +28,15 @@ def mainCrawler():
         try:
             response = requests.get(url, headers=header)
         except requests.exceptions.ConnectionError as error:
-            printError("\n" + tstamp() + " " + error)
+            printError("\n" + tstamp() + " " + str(error))
         except socket.gaierror as error:
-            printError("\n" + tstamp() + " " + error)
+            printError("\n" + tstamp() + " " + str(error))
         except requests.exceptions.TooManyRedirects as error:
-            printError("\n" + tstamp() + " " + error)
+            printError("\n" + tstamp() + " " + str(error))
         except requests.exceptions.InvalidURL as error:
-            printError("\n" + tstamp() + " " + error)
+            printError("\n" + tstamp() + " " + str(error))
         except requests.exceptions.InvalidSchema as error:
-            printError("\n" + tstamp() + " " + error)
+            printError("\n" + tstamp() + " " + str(error))
         
             
         if response:

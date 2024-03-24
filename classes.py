@@ -70,13 +70,13 @@ class Domain:
             self.server = server
             self.xframe = xframe
         except KeyError as error:
-            printError("\n" + tstamp() + " " + error)
+            printError("\n" + tstamp() + " " + str(error))
             return 0
         except requests.exceptions.ConnectionError as error:
-            printError("\n" + tstamp() + " " + error)
+            printError("\n" + tstamp() + " " + str(error))
             return 0
         except socket.gaierror as error:
-            print("\n" + tstamp() + " " + error)
+            print("\n" + tstamp() + " " + str(error))
             return 0
         self.addTitle()
         print("Title: " + self.title)
@@ -129,7 +129,7 @@ class Domain:
         except (Exception, psycopg2.DatabaseError) as error:
             cur.close()
             conn.close()
-            print("\n" + tstamp() + " " + error) 
+            print("\n" + tstamp() + " " + str(error)) 
         cur.close()
         conn.close()
         return
