@@ -44,8 +44,6 @@ class Domain:
             response = requests.head(url)
             server = response.headers['Server']
             xframe = response.headers['X-Frame-Options']
-            print(tstamp() + " Server: " + server)
-            print(tstamp() + " X-Frame-Options: " + xframe)
             self.server = server
             self.xframe = xframe
         except KeyError as error:
@@ -71,7 +69,7 @@ class Domain:
             with  conn.cursor() as cur:
                 cur.execute(sql, (table))
                 conn.commit()
-                print(tstamp() + " Written to DB")
+                print(tstamp() + " Written to DB: " + self.name)
         except (Exception, psycopg2.DatabaseError) as error:
             cur.close()
             conn.close()
