@@ -60,5 +60,4 @@ def mainCrawler():
     else:
         sys.exit("All done!")
 
-
 mainCrawler()
