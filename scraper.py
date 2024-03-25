@@ -50,7 +50,7 @@ def mainCrawler():
                     if r.startswith("http") and r not in urlList:
                         urlList.append(r)
                         if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/" or ".co/" or ".uk/" or ".us/"
-                                       or ".ai/" or ".io/" or ".info/" or ".xyz/" or ".ly/" or ".site/" or ".me/" or ".bg/"):
+                                       or ".ai/" or ".io/" or ".info/" or ".xyz/" or ".ly/" or ".site/" or ".me/" or ".bg/" or ".hk/"):
                             r = Domain(r)
                             r.addServerInfo()
                             r.checkDBForDomain()
