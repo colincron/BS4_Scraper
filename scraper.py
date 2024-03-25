@@ -37,6 +37,8 @@ def mainCrawler():
             printError("\n" + tstamp() + " " + str(error))
         except requests.exceptions.InvalidSchema as error:
             printError("\n" + tstamp() + " " + str(error))
+        except requests.exceptions.ChunkedEncodingError as error:
+            printError("\n" + tstamp() + " " + str(error))
         
             
         if response:
