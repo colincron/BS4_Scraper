@@ -53,17 +53,14 @@ class Domain:
                 target = socket.gethostbyname(str(self.name)) 
             except socket.gaierror as error:
                 printError(error)
-        # returns IPV4 address
         return target
     
     def addServerInfo(self):
         url = self.name
         try: 
             response = requests.head(url)
-            server = response.headers['Server']
-            xframe = response.headers['X-Frame-Options']
-            self.server = server
-            self.xframe = xframe
+            self.server = response.headers['Server']
+            self.xframe = response.headers['X-Frame-Options']
         except KeyError as error:
             printError("\n" + tstamp() + " " + str(error))
             return 0
@@ -76,6 +73,8 @@ class Domain:
         except requests.exceptions.SSLError as error:
             printError("\n" + tstamp() + " " + str(error))
             return 0
+        except requests.exceptions.InvalidURL as error:
+            printError("\n" + tstamp() + " " + str(error))
         
         self.addTitle()
         print("Title: " + self.title)

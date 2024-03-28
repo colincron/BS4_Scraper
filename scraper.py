@@ -44,13 +44,11 @@ def mainCrawler():
                     
                     if r.startswith("http") and r not in urlList:
                         urlList.append(r)
-                        
-                        if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/" or ".co/" or ".uk/" or ".us/" or
-                                        ".ai/" or ".io/" or ".info/" or ".xyz/" or ".ly/" or ".site/" or ".me/" or ".bg/" or ".hk/"):
+                        tldList = (".com",".gov/",".net/",".edu/",".org/",".io/",".co.uk/",".ie/",".info/")
+                        if r.endswith(tldList):
                             d = Domain(r)
                             d.addServerInfo()
                             d.checkDBForDomain()
-                            
                         elif r.endswith(".txt"):
                             print("\n\n" + tstamp() + " .txt found! Time to write more code!\n\n")
                             
