@@ -8,18 +8,18 @@ def mainCrawler():
     startUrl = input(tstamp() + " Start URL: ")
     #numberOfCrawls = input(tstamp() + " How many crawls do you want to do? ")
     numberOfCrawls = 5000
-    i = 0
     urlList = [startUrl,]
+    i = 0
 
-    while len(urlList) > i and int(numberOfCrawls) >= i: 
-        url = urlList[i]
+    while len(urlList) > 0: 
+        url = urlList[0]
         print("\n" + tstamp() + " Length of urlList: " + str(len(urlList)))
         print(tstamp() + " Number of sites crawled:" + str(i) + "\n")
         
         while url.endswith("onion") or url.endswith("onion/"):
             onionHandler(url)
-            url = urlList[ i + 1 ]
-            i = i + 1
+            urlList.pop(0)
+            i = i+1
         
         print(tstamp() + " Now scanning: " + url)
         
@@ -27,19 +27,10 @@ def mainCrawler():
         
         try:
             response = requests.get(url, headers=header)
-        except requests.exceptions.ConnectionError as error:
-            printError("\n" + tstamp() + " " + str(error))
-        except socket.gaierror as error:
-            printError("\n" + tstamp() + " " + str(error))
-        except requests.exceptions.TooManyRedirects as error:
-            printError("\n" + tstamp() + " " + str(error))
-        except requests.exceptions.InvalidURL as error:
-            printError("\n" + tstamp() + " " + str(error))
-        except requests.exceptions.InvalidSchema as error:
-            printError("\n" + tstamp() + " " + str(error))
-        except requests.exceptions.ChunkedEncodingError as error:
-            printError("\n" + tstamp() + " " + str(error))
-        
+        except (requests.exceptions.ConnectionError, socket.gaierror, 
+                requests.exceptions.TooManyRedirects, requests.exceptions.InvalidURL, 
+                requests.exceptions.ChunkedEncodingError, requests.exceptions.InvalidSchema) as error:
+            printError("\n" + tstamp() + " " + str(error))      
             
         if response:
             htmlData = response.content
@@ -48,15 +39,22 @@ def mainCrawler():
 
             for a in anchors:
                 references = [a["href"]]
+                
                 for r in references:
+                    
                     if r.startswith("http") and r not in urlList:
                         urlList.append(r)
-                        if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/" or ".co/" or ".uk/" or ".us/"
-                                       or ".ai/" or ".io/" or ".info/" or ".xyz/" or ".ly/" or ".site/" or ".me/" or ".bg/" or ".hk/"):
-                            r = Domain(r)
-                            r.addServerInfo()
-                            r.checkDBForDomain()
+                        
+                        if r.endswith(".com/" or ".net/" or ".edu/" or ".org/" or ".io/" or ".gov/" or ".co/" or ".uk/" or ".us/" or
+                                        ".ai/" or ".io/" or ".info/" or ".xyz/" or ".ly/" or ".site/" or ".me/" or ".bg/" or ".hk/"):
+                            d = Domain(r)
+                            d.addServerInfo()
+                            d.checkDBForDomain()
                             
+                        elif r.endswith(".txt"):
+                            print("\n\n" + tstamp() + " .txt found! Time to write more code!\n\n")
+                            
+        urlList.pop(0)
         i = i + 1
         
     else:

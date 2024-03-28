@@ -23,13 +23,8 @@ class Domain:
         header = createRequestHeader()
         try:
             response = requests.get(url, headers=header)
-        except requests.exceptions.ConnectionError as error:
-            printError("\n" + tstamp() + " " + str(error))
-        except socket.gaierror as error:
-            printError("\n" + tstamp() + " " + str(error))
-        except requests.exceptions.TooManyRedirects as error:
-            printError("\n" + tstamp() + " " + str(error))
-        except requests.exceptions.InvalidURL as error:
+        except (requests.exceptions.TooManyRedirects, requests.exceptions.ConnectionError, 
+                socket.gaierror, requests.exceptions.InvalidURL) as error:
             printError("\n" + tstamp() + " " + str(error))
 
         if response:
@@ -72,12 +67,16 @@ class Domain:
         except KeyError as error:
             printError("\n" + tstamp() + " " + str(error))
             return 0
+        except socket.gaierror as error:
+            printError("\n" + tstamp() + " " + str(error))
+            return 0
         except requests.exceptions.ConnectionError as error:
             printError("\n" + tstamp() + " " + str(error))
             return 0
-        except socket.gaierror as error:
-            print("\n" + tstamp() + " " + str(error))
+        except requests.exceptions.SSLError as error:
+            printError("\n" + tstamp() + " " + str(error))
             return 0
+        
         self.addTitle()
         print("Title: " + self.title)
     
@@ -89,7 +88,9 @@ class Domain:
                             port = 5432)
         cur = conn.cursor()
         #urlToSave = str(urlToSave)
-        sql = "INSERT INTO {} (url, ip, servertype, xframe, title) VALUES ('{}','{}','{}','{}','{}');".format(table, self.name, self.ip, self.server, self.xframe, self.title)
+        sql = """INSERT INTO {} (url, ip, servertype, xframe, title) 
+            VALUES ('{}','{}','{}','{}','{}');""".format(table, self.name, 
+            self.ip, self.server, self.xframe, self.title)
         try:
             with  conn.cursor() as cur:
                 cur.execute(sql, (table))
@@ -117,14 +118,12 @@ class Domain:
                 cur.execute(sql)
                 result = cur.fetchall()
                 conn.commit()
-
                 try: 
                     if str(*result[0]) == self.name:
-                        print("\n" + tstamp() +" Dupe found!\n")
-                        return
+                        return True
                 except:
                     self.writeToDatabase("domains")
-                    return
+                    return False
                 
         except (Exception, psycopg2.DatabaseError) as error:
             cur.close()
