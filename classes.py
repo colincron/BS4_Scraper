@@ -3,6 +3,7 @@ from config import secret
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from functions import tstamp, printError, createRequestHeader
+from scanner import scanner
 
 class Domain:
     
@@ -53,6 +54,10 @@ class Domain:
                 target = socket.gethostbyname(str(self.name)) 
             except socket.gaierror as error:
                 printError(error)
+        try:
+            scanner(self.name)
+        except:
+            return target
         return target
     
     def addServerInfo(self):

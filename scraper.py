@@ -47,6 +47,7 @@ def mainCrawler():
                         tldList = (".com",".gov/",".net/",".edu/",".org/",".io/",".co.uk/",".ie/",".info/")
                         if r.endswith(tldList):
                             d = Domain(r)
+                            print(d.name)
                             d.addServerInfo()
                             d.checkDBForDomain()
                         elif r.endswith(".txt"):
