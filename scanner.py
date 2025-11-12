@@ -30,6 +30,6 @@ def scanner(host):
         return print("Couldn't connect to server")
 
     t2 = datetime.now()
-    timetaken = t2-t1
+    time_taken = t2-t1
     print("[*] Scanning ended at: "+str(t2)+"\n")
-    print("[*] Time taken= "+str(timetaken))
+    print("[*] Time taken= "+str(time_taken))

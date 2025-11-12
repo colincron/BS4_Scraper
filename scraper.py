@@ -5,20 +5,21 @@ from functions import onionHandler, tstamp, createRequestHeader, printError
 
 def mainCrawler():
     response = ""
-    startUrl = input(tstamp() + " Start URL: ")
+    start_url = input(tstamp() + " Start URL: ")
     #numberOfCrawls = input(tstamp() + " How many crawls do you want to do? ")
-    numberOfCrawls = 5000
-    urlList = [startUrl,]
+    number_of_crawls = 5000
+    url_list = [start_url,]
+    print("URL List: " + str(url_list))
     i = 0
 
-    while len(urlList) > 0: 
-        url = urlList[0]
-        print("\n" + tstamp() + " Length of urlList: " + str(len(urlList)))
+    while len(url_list) > 0:
+        url = url_list[0]
+        print("\n" + tstamp() + " Length of url_list: " + str(len(url_list)))
         print(tstamp() + " Number of sites crawled:" + str(i) + "\n")
         
         while url.endswith("onion") or url.endswith("onion/"):
             onionHandler(url)
-            urlList.pop(0)
+            url_list.pop(0)
             i = i+1
         
         print(tstamp() + " Now scanning: " + url)
@@ -42,18 +43,19 @@ def mainCrawler():
                 
                 for r in references:
                     
-                    if r.startswith("http") and r not in urlList:
-                        urlList.append(r)
+                    if r.startswith("http") and r not in url_list:
+                        url_list.append(r)
                         tldList = (".com",".gov/",".net/",".edu/",".org/",".io/",".co.uk/",".ie/",".info/")
                         if r.endswith(tldList):
                             d = Domain(r)
                             print(d.name)
                             d.addServerInfo()
-                            d.checkDBForDomain()
+                            d.check_db_for_domain()
+                            #d.write_to_database("Scraped")
                         elif r.endswith(".txt"):
                             print("\n\n" + tstamp() + " .txt found! Time to write more code!\n\n")
                             
-        urlList.pop(0)
+        url_list.pop(0)
         i = i + 1
         
     else:

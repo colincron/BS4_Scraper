@@ -1,9 +1,13 @@
-import psycopg2, socket, requests
-from config import secret
+import socket, requests
+# from config import secret
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+from setuptools.command.egg_info import write_toplevel_names
+
 from functions import tstamp, printError, createRequestHeader
 from scanner import scanner
+import sqlite3
+
 
 class Domain:
     
@@ -83,56 +87,36 @@ class Domain:
         
         self.addTitle()
         print("Title: " + self.title)
-    
-    def writeToDatabase(self, table):
-        conn = psycopg2.connect(database = "ScrapeDB",
-                            user="postgres",
-                            host="localhost",
-                            password = secret,
-                            port = 5432)
-        cur = conn.cursor()
-        #urlToSave = str(urlToSave)
-        sql = """INSERT INTO {} (url, ip, servertype, xframe, title) 
-            VALUES ('{}','{}','{}','{}','{}');""".format(table, self.name, 
-            self.ip, self.server, self.xframe, self.title)
+
+    def write_to_database(self, table):
+        conn = sqlite3.connect("ScrapeDB", isolation_level=None)
+        # print("Connected to DB")
+        conn.execute('''CREATE TABLE IF NOT EXISTS "Scraped" (
+                            "url"	TEXT NOT NULL,
+                	        "ip"	TEXT NOT NULL,
+                	        "servertype"	TEXT,
+                	        "xframe"	TEXT,
+                	        "title"	TEXT
+                            )''')
+        sql = """INSERT INTO {} (url, ip, servertype, xframe, title)
+                    VALUES ('{}','{}','{}','{}','{}');""".format(table, self.name,
+                                                                 self.ip, self.server, self.xframe, self.title)
         try:
-            with  conn.cursor() as cur:
-                cur.execute(sql, (table))
-                conn.commit()
-                print(tstamp() + " Written to DB: " + self.name)
-        except (Exception, psycopg2.DatabaseError) as error:
-            cur.close()
-            conn.close()
-            print(error)
-        cur.close()
-        conn.close()
-        return 0
-    
-    def checkDBForDomain(self):
-        self.ip = self.addIP()
-        conn = psycopg2.connect(database = "ScrapeDB",
-                            user="postgres",
-                            host="localhost",
-                            password = secret,
-                            port = 5432)
-        cur = conn.cursor()
-        sql = "SELECT url from domains where url @@ to_tsquery('{}');".format(self.name)
-        try:
-            with conn.cursor() as cur:
-                cur.execute(sql)
-                result = cur.fetchall()
-                conn.commit()
-                try: 
-                    if str(*result[0]) == self.name:
-                        return True
-                except:
-                    self.writeToDatabase("domains")
-                    return False
-                
-        except (Exception, psycopg2.DatabaseError) as error:
-            cur.close()
-            conn.close()
-            print("\n" + tstamp() + " " + str(error)) 
-        cur.close()
-        conn.close()
+            conn.execute(sql)
+            # print("sent info to DB")
+            return
+        finally:
+            return 0
         return
+
+    def check_db_for_domain(self):
+        conn = sqlite3.connect('ScrapeDB', isolation_level=None)
+        # print("Connected to DB")
+        entry_exists = conn.execute("SELECT DISTINCT url FROM Scraped WHERE url='{}'".format(self.name))
+        if entry_exists == self.name:
+            print("URL already in DB")
+            return
+        else:
+            self.write_to_database("Scraped")
+            print("URL written to DB")
+            return
