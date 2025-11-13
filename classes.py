@@ -1,9 +1,5 @@
 import socket, requests
-# from config import secret
-from urllib.request import urlopen
 from bs4 import BeautifulSoup
-from setuptools.command.egg_info import write_toplevel_names
-
 from functions import tstamp, printError, createRequestHeader
 from scanner import scanner
 import sqlite3
@@ -46,22 +42,27 @@ class Domain:
             try:
                 self.name = (self.name.removeprefix("https://")).removesuffix("/")
                 target = socket.gethostbyname(self.name)
+                try:
+                    print("port scanning")
+                    scanner(self.name)
+                except:
+                    return target
             except:
                 return 0
         elif self.name.startswith("http") is True:
             try:
                 self.name = (self.name.removeprefix("http://")).removesuffix("/")
                 print(tstamp() + " Self.name: " + self.name)
+                try:
+                    scanner(self.name)
+                except:
+                    return target
             except:
                 print(tstamp() + " Not this time.")
             try:
                 target = socket.gethostbyname(str(self.name)) 
             except socket.gaierror as error:
                 printError(error)
-        try:
-            scanner(self.name)
-        except:
-            return target
         return target
     
     def addServerInfo(self):
@@ -87,6 +88,11 @@ class Domain:
         
         self.addTitle()
         print("Title: " + self.title)
+        try:
+            print("port scanning")
+            scanner(self.name)
+        except:
+            return 0
 
     def write_to_database(self, table):
         conn = sqlite3.connect("ScrapeDB", isolation_level=None)

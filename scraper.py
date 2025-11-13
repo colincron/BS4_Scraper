@@ -22,7 +22,7 @@ def mainCrawler():
             url_list.pop(0)
             i = i+1
         
-        print(tstamp() + " Now scanning: " + url)
+        print(tstamp() + " Now searching: " + url)
         
         header = createRequestHeader()
         
