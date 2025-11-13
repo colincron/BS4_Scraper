@@ -27,7 +27,7 @@ class Domain:
             response = requests.get(url, headers=header)
         except (requests.exceptions.TooManyRedirects, requests.exceptions.ConnectionError, 
                 socket.gaierror, requests.exceptions.InvalidURL) as error:
-            print_error("\n" + timestamp() + " " + str(error))
+            print_error(str(error))
 
         if response:
             htmlData = response.content
@@ -41,13 +41,13 @@ class Domain:
         try:
             self.ip = socket.gethostbyname(sanitize_url(str(self.name)))
         except socket.error as err:
-            print(timestamp() + " Error: " + str(err))
+            print_error(str(err))
             return 0
         except TypeError as err:
-            print(timestamp() + " Error: " + str(err))
+            print_error(str(err))
             return 0
         except UnicodeEncodeError as err:
-            print(timestamp() + " Error: " + str(err))
+            print_error(str(err))
             return 0
 
     def add_server_info(self):
@@ -60,19 +60,19 @@ class Domain:
             self.xframe = response.headers['X-Frame-Options']
             self.content_type = response.headers['Content-Type']
         except KeyError as error:
-            print_error("\n" + timestamp() + " " + str(error))
+            print_error(str(error))
             return 0
         except socket.gaierror as error:
-            print_error("\n" + timestamp() + " " + str(error))
+            print_error(str(error))
             return 0
         except requests.exceptions.ConnectionError as error:
-            print_error("\n" + timestamp() + " " + str(error))
+            print_error(str(error))
             return 0
         except requests.exceptions.SSLError as error:
-            print_error("\n" + timestamp() + " " + str(error))
+            print_error(str(error))
             return 0
         except requests.exceptions.InvalidURL as error:
-            print_error("\n" + timestamp() + " " + str(error))
+            print_error(str(error))
         
         self.add_title()
         print(timestamp() + " Title: " + self.title)

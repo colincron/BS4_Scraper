@@ -61,7 +61,7 @@ def create_request_header():
 def print_error(error):
     print("\n" + timestamp() + " " + str(error))
     
-def request_function(url):
+def request_and_parse(url):
     response = ""
     header = create_request_header()
     try:
