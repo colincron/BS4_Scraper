@@ -14,6 +14,6 @@ pip install requirements.txt
 <br><br>
 run the program using:
 <br>
-python scraper.py
+./main.py -D <starting domain>
 
-It will ask for an input, urls must begin with http or https
+
