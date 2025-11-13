@@ -1,6 +1,6 @@
 from datetime import datetime
 import random
-import requests
+import requests, socket
 from bs4 import BeautifulSoup
 
 
