@@ -1,6 +1,20 @@
 from datetime import datetime
 import random
 
+def sanitize_url(url):
+    sanitized = ""
+    if url.startswith("https://") and url.endswith("/"):
+        sanitized = url.replace("https://", "")
+        sanitized = sanitized[:-1]
+    elif url.startswith("http://") and url.endswith("/"):
+        sanitized = url.replace("https://", "")
+        sanitized = sanitized[:-1]
+    elif url.startswith("https://"):
+        sanitized = url.replace("https://", "")
+    elif url.startswith("http://"):
+        sanitized = url.replace("http://", "")
+    return sanitized
+
 def create_db(conn):
     conn.execute('''CREATE TABLE IF NOT EXISTS "Scraped" (
                                 "url"	TEXT NOT NULL,

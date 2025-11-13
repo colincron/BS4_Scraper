@@ -41,7 +41,7 @@ def main_crawler():
                         if r.endswith(tld_list):
                             d = Domain(r)
                             print(d.name)
-                            d.addServerInfo()
+                            d.add_server_info()
                             d.get_ip_address()
                             d.check_db_for_domain()
                         elif r.endswith(".txt"):
