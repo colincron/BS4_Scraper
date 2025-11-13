@@ -14,6 +14,6 @@ pip install requirements.txt
 <br><br>
 run the program using:
 <br>
-./main.py -D <starting domain>
+./main.py -D https://www.example.com
 
 
