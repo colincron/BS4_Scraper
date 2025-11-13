@@ -1,40 +1,21 @@
 from datetime import datetime
 import random
-# import psycopg2
-#
-# def writeToDB(urlToSave, table, column):
-#     conn = psycopg2.connect(database = "ScrapeDB",
-#                             user="postgres",
-#                             host="localhost",
-#                             password = secret,
-#                             port = 5432)
-#     cur = conn.cursor()
-#     urlToSave = str(urlToSave)
-#     sql = "INSERT INTO {} ({}) VALUES ('{}');".format(table, column, urlToSave)
-#     try:
-#         with  conn.cursor() as cur:
-#             cur.execute(sql, (table))
-#             conn.commit()
-#     except (Exception, psycopg2.DatabaseError) as error:
-#         cur.close()
-#         conn.close()
-#         print(error)
-#     cur.close()
-#     conn.close()
-#     return 0
 
-def tstamp(): 
+def create_db(conn):
+    conn.execute('''CREATE TABLE IF NOT EXISTS "Scraped" (
+                                "url"	TEXT NOT NULL,
+                    	        "ip"	TEXT NOT NULL,
+                    	        "servertype"	TEXT,
+                    	        "xframe"	TEXT,
+                    	        "title"	TEXT
+                                )''')
+
+def timestamp():
     dt = datetime.now()
     ts = dt.strftime("%H:%M:%S")
     return ts
-
-def onionHandler(url):
-    if url.endswith(".onion"):
-        print("\n" + tstamp() + "Onion detected\n")
-        writeToDB(url, "onions", "url")
-        return url
     
-def createRequestHeader():
+def create_request_header():
     choice = random.randint(1, 3)
     if choice == 1:
         #Mac OS X-based computer using a Firefox browser
@@ -58,6 +39,6 @@ def createRequestHeader():
                 "Referer" : "127.0.0.1"}
         return header
 
-def printError(error):
-    print("\n" + tstamp() + " " + str(error))
+def print_error(error):
+    print("\n" + timestamp() + " " + str(error))
     

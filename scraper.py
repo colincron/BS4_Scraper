@@ -1,42 +1,34 @@
 import socket, sys, requests
 from bs4 import BeautifulSoup
 from classes import Domain
-from functions import onionHandler, tstamp, createRequestHeader, printError
+from functions import timestamp, create_request_header, print_error
 
-def mainCrawler():
+def main_crawler():
     response = ""
-    start_url = input(tstamp() + " Start URL: ")
-    #numberOfCrawls = input(tstamp() + " How many crawls do you want to do? ")
-    number_of_crawls = 5000
+    start_url = input(timestamp() + " Start URL: ")
     url_list = [start_url,]
     print("URL List: " + str(url_list))
     i = 0
 
     while len(url_list) > 0:
         url = url_list[0]
-        print("\n" + tstamp() + " Length of url_list: " + str(len(url_list)))
-        print(tstamp() + " Number of sites crawled:" + str(i) + "\n")
+        print("\n" + timestamp() + " Length of url_list: " + str(len(url_list)))
+        print(timestamp() + " Number of sites crawled:" + str(i) + "\n")
+        print(timestamp() + " Now searching: " + url)
         
-        while url.endswith("onion") or url.endswith("onion/"):
-            onionHandler(url)
-            url_list.pop(0)
-            i = i+1
-        
-        print(tstamp() + " Now searching: " + url)
-        
-        header = createRequestHeader()
+        header = create_request_header()
         
         try:
             response = requests.get(url, headers=header)
         except (requests.exceptions.ConnectionError, socket.gaierror, 
                 requests.exceptions.TooManyRedirects, requests.exceptions.InvalidURL, 
                 requests.exceptions.ChunkedEncodingError, requests.exceptions.InvalidSchema) as error:
-            printError("\n" + tstamp() + " " + str(error))      
+            print_error("\n" + timestamp() + " " + str(error))
             
         if response:
-            htmlData = response.content
-            parsedData = BeautifulSoup(htmlData, "lxml") #lxml is fast and lenient
-            anchors = parsedData.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
+            html_data = response.content
+            parsed_data = BeautifulSoup(html_data, "lxml") #lxml is fast and lenient
+            anchors = parsed_data.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
 
             for a in anchors:
                 references = [a["href"]]
@@ -45,15 +37,17 @@ def mainCrawler():
                     
                     if r.startswith("http") and r not in url_list:
                         url_list.append(r)
-                        tldList = (".com",".gov/",".net/",".edu/",".org/",".io/",".co.uk/",".ie/",".info/")
-                        if r.endswith(tldList):
+                        tld_list = (".com",".gov/",".net/",".edu/",".org/",".io/",".co.uk/",".ie/",".info/")
+                        if r.endswith(tld_list):
                             d = Domain(r)
                             print(d.name)
                             d.addServerInfo()
+                            d.get_ip_address()
                             d.check_db_for_domain()
-                            #d.write_to_database("Scraped")
                         elif r.endswith(".txt"):
-                            print("\n\n" + tstamp() + " .txt found! Time to write more code!\n\n")
+                            print("\n\n" + timestamp() + " .txt found! Time to write more code!\n\n")
+                            # TODO
+                            # write a handler for .txt files and other interesting file types
                             
         url_list.pop(0)
         i = i + 1
@@ -61,4 +55,4 @@ def mainCrawler():
     else:
         sys.exit("All done!")
 
-mainCrawler()
+main_crawler()
