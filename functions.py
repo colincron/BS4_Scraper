@@ -21,6 +21,7 @@ def create_db(conn):
                     	        "ip"	TEXT NOT NULL,
                     	        "servertype"	TEXT,
                     	        "xframe"	TEXT,
+                    	        "content_type"  TEXT,
                     	        "title"	TEXT
                                 )''')
 

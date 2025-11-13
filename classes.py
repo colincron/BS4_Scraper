@@ -11,6 +11,7 @@ class Domain:
     server = ""
     xframe = ""
     title = ""
+    content_type = ""
     
     def __init__(self, name):
         self.name = name
@@ -44,12 +45,18 @@ class Domain:
         except TypeError as err:
             print(timestamp() + " Error: " + str(err))
             return 0
+        except UnicodeEncodeError as err:
+            print(timestamp() + " Error: " + str(err))
+            return 0
+
     def add_server_info(self):
         url = self.name
         try: 
             response = requests.head(url)
+            print(response.headers['Content-Type'])
             self.server = response.headers['Server']
             self.xframe = response.headers['X-Frame-Options']
+            self.content_type = response.headers['Content-Type']
         except KeyError as error:
             print_error("\n" + timestamp() + " " + str(error))
             return 0
@@ -71,9 +78,9 @@ class Domain:
     def write_to_database(self, table):
         conn = sqlite3.connect("ScrapeDB", isolation_level=None)
         create_db(conn)
-        sql = """INSERT INTO {} (url, ip, servertype, xframe, title)
-                    VALUES ('{}','{}','{}','{}','{}');""".format(table, self.name,
-                                                                 self.ip, self.server, self.xframe, self.title)
+        sql = """INSERT INTO {} (url, ip, servertype, xframe, content_type, title)
+                    VALUES ('{}','{}','{}','{}','{}','{}');""".format(table, self.name,
+                                                                 self.ip, self.server, self.xframe, self.content_type, self.title)
         try:
             conn.execute(sql)
             return
