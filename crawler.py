@@ -2,7 +2,6 @@ import sys
 from classes import Domain
 from functions import timestamp, request_and_parse, print_error
 
-
 def main_crawler():
     start_url = input(timestamp() + " Start URL: ")
     url_list = [start_url,]
