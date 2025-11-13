@@ -54,7 +54,6 @@ class Domain:
         url = self.name
         try: 
             response = requests.head(url)
-            print(response.headers['Content-Type'])
             self.server = response.headers['Server']
             self.cache_control = response.headers['cache-control']
             self.xframe = response.headers['X-Frame-Options']
@@ -94,12 +93,12 @@ class Domain:
         conn = sqlite3.connect('ScrapeDB', isolation_level=None)
         create_db(conn)
 
-        print(timestamp() + " Checking for duplicate URL in database")
+        print(timestamp() + " Checking for " + self.name + " in database")
         entry_exists = conn.execute("SELECT DISTINCT url FROM Scraped WHERE url='{}'".format(self.name))
         if entry_exists == self.name:
-            print(timestamp() + " URL already in DB")
+            print(timestamp() + " " + self.name + " already in DB")
             return
         else:
             self.write_to_database("Scraped")
-            print(timestamp() + " URL written to DB")
+            print(timestamp() + " " + self.name + "  written to DB")
             return

@@ -2,10 +2,8 @@ import sys
 from classes import Domain
 from functions import timestamp, request_and_parse, print_error
 
-def main_crawler():
-    start_url = input(timestamp() + " Start URL: ")
+def main_crawler(start_url):
     url_list = [start_url,]
-    print("URL List: " + str(url_list))
     i = 0
 
     while len(url_list) > 0:
@@ -18,15 +16,12 @@ def main_crawler():
         try:
             for a in anchors:
                 references = [a["href"]]
-
                 for r in references:
-
                     if r.startswith("http") and r not in url_list:
                         url_list.append(r)
                         tld_list = (".com",".gov/",".net/",".edu/",".org/",".io/",".co.uk/",".ie/",".info/")
                         if r.endswith(tld_list):
                             d = Domain(r)
-                            print(d.name)
                             d.add_server_info()
                             d.get_ip_address()
                             d.check_db_for_domain()
@@ -41,5 +36,3 @@ def main_crawler():
         
     else:
         sys.exit(timestamp() + " All done!")
-
-main_crawler()
