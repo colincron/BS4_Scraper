@@ -1,5 +1,8 @@
 from datetime import datetime
 import random
+import requests
+from bs4 import BeautifulSoup
+
 
 def sanitize_url(url):
     sanitized = ""
@@ -20,6 +23,7 @@ def create_db(conn):
                                 "url"	TEXT NOT NULL,
                     	        "ip"	TEXT NOT NULL,
                     	        "servertype"	TEXT,
+                    	        "cache_control" TEXT,
                     	        "xframe"	TEXT,
                     	        "content_type"  TEXT,
                     	        "title"	TEXT
@@ -57,3 +61,19 @@ def create_request_header():
 def print_error(error):
     print("\n" + timestamp() + " " + str(error))
     
+def request_function(url):
+    response = ""
+    header = create_request_header()
+    try:
+        response = requests.get(url, headers=header)
+    except (requests.exceptions.ConnectionError, socket.gaierror,
+            requests.exceptions.TooManyRedirects, requests.exceptions.InvalidURL,
+            requests.exceptions.ChunkedEncodingError, requests.exceptions.InvalidSchema) as error:
+        print_error("\n" + timestamp() + " " + str(error))
+
+    if response:
+        html_data = response.content
+        parsed_data = BeautifulSoup(html_data, "lxml")  # lxml is fast and lenient
+        anchors = parsed_data.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
+        return anchors
+    return 0

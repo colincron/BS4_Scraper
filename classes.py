@@ -9,6 +9,7 @@ class Domain:
     name = ""
     ip = ""
     server = ""
+    cache_control = ""
     xframe = ""
     title = ""
     content_type = ""
@@ -55,6 +56,7 @@ class Domain:
             response = requests.head(url)
             print(response.headers['Content-Type'])
             self.server = response.headers['Server']
+            self.cache_control = response.headers['cache-control']
             self.xframe = response.headers['X-Frame-Options']
             self.content_type = response.headers['Content-Type']
         except KeyError as error:
@@ -78,9 +80,9 @@ class Domain:
     def write_to_database(self, table):
         conn = sqlite3.connect("ScrapeDB", isolation_level=None)
         create_db(conn)
-        sql = """INSERT INTO {} (url, ip, servertype, xframe, content_type, title)
-                    VALUES ('{}','{}','{}','{}','{}','{}');""".format(table, self.name,
-                                                                 self.ip, self.server, self.xframe, self.content_type, self.title)
+        sql = """INSERT INTO {} (url, ip, servertype, cache_control, xframe, content_type, title)
+                    VALUES ('{}','{}','{}','{}','{}','{}','{}');""".format(table, self.name,
+                                                                 self.ip, self.server, self.cache_control, self.xframe, self.content_type, self.title)
         try:
             conn.execute(sql)
             return
