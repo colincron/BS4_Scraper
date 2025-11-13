@@ -39,8 +39,11 @@ class Domain:
         try:
             self.ip = socket.gethostbyname(sanitize_url(str(self.name)))
         except socket.error as err:
-            print(timestamp() + " Error: " + err)
-    
+            print(timestamp() + " Error: " + str(err))
+            return 0
+        except TypeError as err:
+            print(timestamp() + " Error: " + str(err))
+            return 0
     def add_server_info(self):
         url = self.name
         try: 
