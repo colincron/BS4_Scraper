@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import argparse
-from crawler import main_crawler
+from functions import main_crawler
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
