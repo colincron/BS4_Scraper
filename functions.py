@@ -166,7 +166,6 @@ def get_domain_names(anchors, url_list):
 
 def create_db(conn, table_name):
     if table_name == "Domains":
-        print("Creating Domains Table")
         try:
             conn.execute('''CREATE TABLE IF NOT EXISTS '{}' (
                                         "url"	TEXT NOT NULL,
@@ -178,7 +177,6 @@ def create_db(conn, table_name):
         except sqlite3.OperationalError as err:
             print_error(err)
     elif table_name == "Emails":
-        print("Creating Emails Table")
         try:
             conn.execute('''CREATE TABLE IF NOT EXISTS '{}' (
                                         "email_address"	TEXT NOT NULL
