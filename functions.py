@@ -3,13 +3,16 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import socket, requests
 
+
 def timestamp():
     dt = datetime.now()
     ts = dt.strftime("%H:%M:%S")
     return ts
 
+
 def print_error(error):
     print("\n" + timestamp() + " " + str(error))
+
 
 def sanitize_url(url):
     sanitized = ""
@@ -25,29 +28,31 @@ def sanitize_url(url):
         sanitized = url.replace("http://", "")
     return sanitized
 
+
 def create_request_header():
     choice = random.randint(1, 3)
     if choice == 1:
         #Mac OS X-based computer using a Firefox browser
-        header = {"Accept" : "text/html",
-                "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/109.0",
-                "Accept-Encoding" : "gzip, deflate, br",
-                "Referer" : "127.0.0.1"}
+        header = {"Accept": "text/html",
+                  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/109.0",
+                  "Accept-Encoding": "gzip, deflate, br",
+                  "Referer": "127.0.0.1"}
         return header
     elif choice == 2:
         #Chrome OS-based laptop using Chrome browser (Chromebook)
-        header = {"Accept" : "text/html",
-                "User-Agent" : "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36",
-                "Accept-Encoding" : "gzip, deflate, br",
-                "Referer" : "127.0.0.1"}
+        header = {"Accept": "text/html",
+                  "User-Agent": "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36",
+                  "Accept-Encoding": "gzip, deflate, br",
+                  "Referer": "127.0.0.1"}
         return header
     elif choice == 3:
         #Windows 7-based PC using a Chrome browser
-        header = {"Accept" : "text/html",
-                "User-Agent" : "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36",
-                "Accept-Encoding" : "gzip, deflate, br",
-                "Referer" : "127.0.0.1"}
+        header = {"Accept": "text/html",
+                  "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36",
+                  "Accept-Encoding": "gzip, deflate, br",
+                  "Referer": "127.0.0.1"}
         return header
+
 
 def email_scraper(response):
     try:
@@ -82,10 +87,10 @@ def email_scraper(response):
             file1 = open("emails.txt", "a")
             file1.write(email + "\n")
             file1.close()
-    except requests.exceptions.ConnectionError as err:
+    except (requests.exceptions.ConnectionError,
+            requests.exceptions.TooManyRedirects) as err:
         print_error(err)
-    except requests.exceptions.TooManyRedirects as err:
-        print_error(err)
+
 
 def request_and_parse(url):
     response = ""
@@ -102,7 +107,8 @@ def request_and_parse(url):
         anchors = parsed_data.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
         email_scraper(response)
         return anchors
-    return 0
+    return None
+
 
 def grab_title(url):
     get_response = ""
@@ -119,8 +125,9 @@ def grab_title(url):
         if title:
             title = str(title).removeprefix("<title>").removesuffix("</title>")
             return title
-        return 0
-    return 0
+        return None
+    return None
+
 
 def get_server_info(domain_name):
     try:
@@ -133,23 +140,13 @@ def get_server_info(domain_name):
         write_to_database(str(domain_name), ip, server, content_type, title)
         return 0
 
-    except KeyError as err:
+    except (KeyError, TypeError,
+            UnicodeEncodeError, socket.error,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.InvalidURL) as err:
         print_error(str(err))
         return 0
-    except socket.error as err:
-        print_error(str(err))
-        return 0
-    except TypeError as err:
-        print_error(str(err))
-        return 0
-    except UnicodeEncodeError as err:
-        print_error(str(err))
-        return 0
-    except requests.exceptions.ConnectionError as err:
-        print_error(str(err))
-        return 0
-    except requests.exceptions.InvalidURL as err:
-        print_error(str(err))
+
 
 def get_domain_names(anchors, url_list):
     try:
@@ -165,6 +162,7 @@ def get_domain_names(anchors, url_list):
         print_error(str(err))
     return url_list
 
+
 def create_db(conn):
     try:
         conn.execute('''CREATE TABLE IF NOT EXISTS Scraped (
@@ -177,27 +175,29 @@ def create_db(conn):
     except sqlite3.OperationalError as err:
         print_error(err)
 
+
 def check_db_for_domain(conn, name):
     db_result = ""
     print(timestamp() + " Checking for " + name + " in database")
     entry_exists = conn.execute("SELECT DISTINCT url FROM Scraped WHERE url='{}'".format(name))
-    # print(str(entry_exists.fetchall()[0]).replace("(","").replace(",)",""))
     try:
-        db_result = str(entry_exists.fetchall()[0]).replace("('","").replace("',)","")
+        db_result = str(entry_exists.fetchall()[0]).replace("('", "").replace("',)", "")
     except IndexError as err:
-        print_error(err)
+        # print_error(err)
+        return None
     if db_result == name:
         print("\n" + timestamp() + " " + name + " is already in DB")
         return False
     else:
         return True
 
+
 def write_to_database(name, ip, server, content_type, title):
     conn = sqlite3.connect("ScrapeDB", isolation_level=None)
     create_db(conn)
     if check_db_for_domain(conn, name):
         sql = """INSERT INTO Scraped (url, ip, servertype, content_type, title)
-                    VALUES ('{}','{}','{}','{}','{}');""".format( name, ip, server, content_type, title)
+                    VALUES ('{}','{}','{}','{}','{}');""".format(name, ip, server, content_type, title)
         try:
             conn.execute(sql)
             print(timestamp() + " " + name + " saved to database")
@@ -205,6 +205,7 @@ def write_to_database(name, ip, server, content_type, title):
         finally:
             return 0
     return 0
+
 
 def main_crawler(start_url):
     url_list = [start_url, ]
@@ -223,9 +224,3 @@ def main_crawler(start_url):
 
     else:
         sys.exit(timestamp() + " All done!")
-
-
-
-
-
-
