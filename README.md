@@ -14,5 +14,4 @@ pip install requirements.txt
 <br><br>
 run the program using:
 <br>
-main.py -D <domain>
-It will ask for an input, urls must begin with http or https
+main.py -D http://www.example.com
