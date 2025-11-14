@@ -183,7 +183,6 @@ def check_db_for_domain(conn, name):
     try:
         db_result = str(entry_exists.fetchall()[0]).replace("('", "").replace("',)", "")
     except IndexError as err:
-        # print_error(err)
         return True
     if db_result == name:
         print("\n" + timestamp() + " " + name + " is already in DB")
@@ -196,7 +195,6 @@ def write_to_database(name, ip, server, content_type, title):
     conn = sqlite3.connect("ScrapeDB", isolation_level=None)
     create_db(conn)
     if check_db_for_domain(conn, name):
-        print("Trying to insert")
         sql = """INSERT INTO Scraped (url, ip, servertype, content_type, title)
                     VALUES ('{}','{}','{}','{}','{}');""".format(name, ip, server, content_type, title)
         try:
