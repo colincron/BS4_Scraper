@@ -84,9 +84,10 @@ def email_scraper(response):
 
         for email in emails:
             print("Found email: " + email)
-            file1 = open("emails.txt", "a")
-            file1.write(email + "\n")
-            file1.close()
+            # file1 = open("emails.txt", "a")
+            # file1.write(email + "\n")
+            # file1.close()
+            write_to_email_database(email)
     except (requests.exceptions.ConnectionError,
             requests.exceptions.TooManyRedirects) as err:
         print_error(err)
@@ -137,7 +138,7 @@ def get_server_info(domain_name):
         server = header_response.headers['Server']
         content_type = header_response.headers['Content-Type']
         ip = socket.gethostbyname(sanitize_url(str(domain_name)))
-        write_to_database(str(domain_name), ip, server, content_type, title)
+        write_to_domain_database(str(domain_name), ip, server, content_type, title)
         return 0
 
     except (KeyError, TypeError,
@@ -163,43 +164,82 @@ def get_domain_names(anchors, url_list):
     return url_list
 
 
-def create_db(conn):
-    try:
-        conn.execute('''CREATE TABLE IF NOT EXISTS Scraped (
-                                    "url"	TEXT NOT NULL,
-                                    "ip"	TEXT NOT NULL,
-                                    "servertype"	TEXT,
-                                    "content_type"  TEXT,
-                                    "title"	TEXT
-                                    )''')
-    except sqlite3.OperationalError as err:
-        print_error(err)
+def create_db(conn, table_name):
+    if table_name == "Domains":
+        print("Creating Domains Table")
+        try:
+            conn.execute('''CREATE TABLE IF NOT EXISTS '{}' (
+                                        "url"	TEXT NOT NULL,
+                                        "ip"	TEXT NOT NULL,
+                                        "servertype"	TEXT,
+                                        "content_type"  TEXT,
+                                        "title"	TEXT
+                                        )'''.format(table_name))
+        except sqlite3.OperationalError as err:
+            print_error(err)
+    elif table_name == "Emails":
+        print("Creating Emails Table")
+        try:
+            conn.execute('''CREATE TABLE IF NOT EXISTS '{}' (
+                                        "email_address"	TEXT NOT NULL
+                                        )'''.format(table_name))
+        except sqlite3.OperationalError as err:
+            print_error(err)
 
 
-def check_db_for_domain(conn, name):
+def check_db_for_domain(conn, name, table_name):
     db_result = ""
     print(timestamp() + " Checking for " + name + " in database")
-    entry_exists = conn.execute("SELECT DISTINCT url FROM Scraped WHERE url='{}'".format(name))
-    try:
-        db_result = str(entry_exists.fetchall()[0]).replace("('", "").replace("',)", "")
-    except IndexError as err:
-        return True
-    if db_result == name:
-        print("\n" + timestamp() + " " + name + " is already in DB")
-        return False
-    else:
-        return True
+    if table_name == "Domains":
+        entry_exists = conn.execute("SELECT DISTINCT url FROM '{}' WHERE url='{}'".format(table_name, name))
+        try:
+            db_result = str(entry_exists.fetchall()[0]).replace("('", "").replace("',)", "")
+        except IndexError as err:
+            return True
+        if db_result == name:
+            print("\n" + timestamp() + " " + name + " is already in DB")
+            return False
+        else:
+            return True
+    elif table_name == "Emails":
+        entry_exists = conn.execute("SELECT DISTINCT email_address FROM '{}' WHERE email_address='{}'".format(table_name, name))
+        try:
+            db_result = str(entry_exists.fetchall()[0]).replace("('", "").replace("',)", "")
+        except IndexError as err:
+            return True
+        if db_result == name:
+            print("\n" + timestamp() + " " + name + " is already in DB")
+            return False
+        else:
+            return True
 
 
-def write_to_database(name, ip, server, content_type, title):
+def write_to_domain_database(name, ip, server, content_type, title):
+    table_name = "Domains"
     conn = sqlite3.connect("ScrapeDB", isolation_level=None)
-    create_db(conn)
-    if check_db_for_domain(conn, name):
-        sql = """INSERT INTO Scraped (url, ip, servertype, content_type, title)
-                    VALUES ('{}','{}','{}','{}','{}');""".format(name, ip, server, content_type, title)
+    create_db(conn, table_name)
+    if check_db_for_domain(conn, name, table_name):
+        sql = """INSERT INTO '{}' (url, ip, servertype, content_type, title)
+                    VALUES ('{}','{}','{}','{}','{}');""".format(table_name, name, ip, server, content_type, title)
         try:
             conn.execute(sql)
             print(timestamp() + " " + name + " saved to database")
+            return
+        finally:
+            return
+    return
+
+
+def write_to_email_database(email_address):
+    table_name = "Emails"
+    conn = sqlite3.connect("ScrapeDB", isolation_level=None)
+    create_db(conn, table_name)
+    if check_db_for_domain(conn, email_address, table_name):
+        sql = """INSERT INTO '{}' (email_address)
+                    VALUES ('{}');""".format(table_name, email_address)
+        try:
+            conn.execute(sql)
+            print(timestamp() + " " + email_address + " saved to database")
             return
         finally:
             return 0
