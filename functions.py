@@ -123,7 +123,6 @@ def grab_title(url):
     return 0
 
 def get_server_info(domain_name):
-    print("get_server_info running")
     try:
         header_response = requests.head(domain_name, headers=create_request_header())
 
@@ -131,11 +130,6 @@ def get_server_info(domain_name):
         server = header_response.headers['Server']
         content_type = header_response.headers['Content-Type']
         ip = socket.gethostbyname(sanitize_url(str(domain_name)))
-        print("Domain name: " + str(domain_name))
-        print("Title: " + title)
-        print("Server " + server)
-        print("content_type" + content_type)
-        print(ip + "\n\n")
         write_to_database(str(domain_name), ip, server, content_type, title)
         return 0
 
@@ -167,8 +161,6 @@ def get_domain_names(anchors, url_list):
                     tld_list = (".com", ".gov/", ".net/", ".edu/", ".org/", ".io/", ".co.uk/", ".ie/", ".info/")
                     if r.endswith(tld_list):
                         get_server_info(r)
-                        print(r)
-
     except TypeError as err:
         print_error(str(err))
     return url_list
@@ -186,22 +178,30 @@ def create_db(conn):
         print_error(err)
 
 def check_db_for_domain(conn, name):
+    db_result = ""
     print(timestamp() + " Checking for " + name + " in database")
     entry_exists = conn.execute("SELECT DISTINCT url FROM Scraped WHERE url='{}'".format(name))
-    if entry_exists == name:
-        print(timestamp() + " " + name + " already in DB")
-        return True
-    else:
+    # print(str(entry_exists.fetchall()[0]).replace("(","").replace(",)",""))
+    try:
+        db_result = str(entry_exists.fetchall()[0]).replace("('","").replace("',)","")
+        print("VISUAL COMPARE: " + db_result + " " + name)
+    except IndexError as err:
+        print_error(err)
+    if db_result == name:
+        print("\n" + timestamp() + " " + name + " is already in DB")
         return False
+    else:
+        return True
 
 def write_to_database(name, ip, server, content_type, title):
     conn = sqlite3.connect("ScrapeDB", isolation_level=None)
     create_db(conn)
-    if not check_db_for_domain(conn, name):
+    if check_db_for_domain(conn, name):
         sql = """INSERT INTO Scraped (url, ip, servertype, content_type, title)
                     VALUES ('{}','{}','{}','{}','{}');""".format( name, ip, server, content_type, title)
         try:
             conn.execute(sql)
+            print(timestamp() + " " + name + " saved to database")
             return
         finally:
             return 0
