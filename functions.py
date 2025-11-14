@@ -1,8 +1,15 @@
+import sqlite3, re, random
 from datetime import datetime
-import random
-import requests, socket
 from bs4 import BeautifulSoup
+import socket, requests
 
+def timestamp():
+    dt = datetime.now()
+    ts = dt.strftime("%H:%M:%S")
+    return ts
+
+def print_error(error):
+    print("\n" + timestamp() + " " + str(error))
 
 def sanitize_url(url):
     sanitized = ""
@@ -18,22 +25,6 @@ def sanitize_url(url):
         sanitized = url.replace("http://", "")
     return sanitized
 
-def create_db(conn):
-    conn.execute('''CREATE TABLE IF NOT EXISTS "Scraped" (
-                                "url"	TEXT NOT NULL,
-                    	        "ip"	TEXT NOT NULL,
-                    	        "servertype"	TEXT,
-                    	        "cache_control" TEXT,
-                    	        "xframe"	TEXT,
-                    	        "content_type"  TEXT,
-                    	        "title"	TEXT
-                                )''')
-
-def timestamp():
-    dt = datetime.now()
-    ts = dt.strftime("%H:%M:%S")
-    return ts
-    
 def create_request_header():
     choice = random.randint(1, 3)
     if choice == 1:
@@ -58,14 +49,48 @@ def create_request_header():
                 "Referer" : "127.0.0.1"}
         return header
 
-def print_error(error):
-    print("\n" + timestamp() + " " + str(error))
-    
+def email_scraper(response):
+    try:
+        # response = requests.get(url)
+        soup = BeautifulSoup(response.text, "lxml")
+
+        emails = set()
+        for link in soup.find_all('a', href=True):
+            if 'mailto:' in link['href']:
+                email = link['href'].replace('mailto:', '').strip()
+                emails.add(email)
+
+        # Method 2: Search in all text content AND attributes
+        for tag in soup.find_all(True):
+            # Check tag text
+            if tag.string:
+                found_emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[com]+', tag.string)
+                emails.update(found_emails)
+
+            # Check all attributes
+            for attr_value in tag.attrs.values():
+                if isinstance(attr_value, str):
+                    found_emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[com]+', attr_value)
+                    emails.update(found_emails)
+
+        # Method 3: Search the raw HTML (most comprehensive)
+        all_emails = set(re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[com]+', response.text))
+        emails.update(all_emails)
+
+        for email in emails:
+            print("Found email: " + email)
+            file1 = open("emails.txt", "a")
+            file1.write(email + "\n")
+            file1.close()
+    except requests.exceptions.ConnectionError as err:
+        print_error(err)
+    except requests.exceptions.TooManyRedirects as err:
+        print_error(err)
+
 def request_and_parse(url):
     response = ""
-    header = create_request_header()
     try:
-        response = requests.get(url, headers=header)
+        response = requests.get(url, headers=create_request_header())
     except (requests.exceptions.ConnectionError, socket.gaierror,
             requests.exceptions.TooManyRedirects, requests.exceptions.InvalidURL,
             requests.exceptions.ChunkedEncodingError, requests.exceptions.InvalidSchema) as error:
@@ -75,5 +100,116 @@ def request_and_parse(url):
         html_data = response.content
         parsed_data = BeautifulSoup(html_data, "lxml")  # lxml is fast and lenient
         anchors = parsed_data.find_all(lambda tag: tag.name == 'a' and tag.get('href'))
+        email_scraper(response)
         return anchors
     return 0
+
+def grab_title(url):
+    get_response = ""
+    try:
+        get_response = requests.get(url, headers=create_request_header())
+    except (requests.exceptions.TooManyRedirects, requests.exceptions.ConnectionError,
+            socket.gaierror, requests.exceptions.InvalidURL) as error:
+        print_error(str(error))
+
+    if get_response:
+        html_data = get_response.content
+        parsed_data = BeautifulSoup(html_data, "lxml")  # lxml is fast and lenient
+        title = parsed_data.find('title')
+        if title:
+            title = str(title).removeprefix("<title>").removesuffix("</title>")
+            return title
+        return 0
+    return 0
+
+def get_server_info(domain_name):
+    print("get_server_info running")
+    try:
+        header_response = requests.head(domain_name, headers=create_request_header())
+
+        title = grab_title(domain_name)
+        server = header_response.headers['Server']
+        content_type = header_response.headers['Content-Type']
+        ip = socket.gethostbyname(sanitize_url(str(domain_name)))
+        print("Domain name: " + str(domain_name))
+        print("Title: " + title)
+        print("Server " + server)
+        print("content_type" + content_type)
+        print(ip + "\n\n")
+        write_to_database(str(domain_name), ip, server, content_type, title)
+        return 0
+
+    except KeyError as err:
+        print_error(str(err))
+        return 0
+    except socket.error as err:
+        print_error(str(err))
+        return 0
+    except TypeError as err:
+        print_error(str(err))
+        return 0
+    except UnicodeEncodeError as err:
+        print_error(str(err))
+        return 0
+    except requests.exceptions.ConnectionError as err:
+        print_error(str(err))
+        return 0
+    except requests.exceptions.InvalidURL as err:
+        print_error(str(err))
+
+def get_domain_names(anchors, url_list):
+    try:
+        for a in anchors:
+            references = [a["href"]]
+            for r in references:
+                if r.startswith("http") and r not in url_list:
+                    url_list.append(r)
+                    tld_list = (".com", ".gov/", ".net/", ".edu/", ".org/", ".io/", ".co.uk/", ".ie/", ".info/")
+                    if r.endswith(tld_list):
+                        get_server_info(r)
+                        print(r)
+
+    except TypeError as err:
+        print_error(str(err))
+    return url_list
+
+def create_db(conn):
+    try:
+        conn.execute('''CREATE TABLE IF NOT EXISTS Scraped (
+                                    "url"	TEXT NOT NULL,
+                                    "ip"	TEXT NOT NULL,
+                                    "servertype"	TEXT,
+                                    "content_type"  TEXT,
+                                    "title"	TEXT
+                                    )''')
+    except sqlite3.OperationalError as err:
+        print_error(err)
+
+def check_db_for_domain(conn, name):
+    print(timestamp() + " Checking for " + name + " in database")
+    entry_exists = conn.execute("SELECT DISTINCT url FROM Scraped WHERE url='{}'".format(name))
+    if entry_exists == name:
+        print(timestamp() + " " + name + " already in DB")
+        return True
+    else:
+        return False
+
+def write_to_database(name, ip, server, content_type, title):
+    conn = sqlite3.connect("ScrapeDB", isolation_level=None)
+    create_db(conn)
+    if not check_db_for_domain(conn, name):
+        sql = """INSERT INTO Scraped (url, ip, servertype, content_type, title)
+                    VALUES ('{}','{}','{}','{}','{}');""".format( name, ip, server, content_type, title)
+        try:
+            conn.execute(sql)
+            return
+        finally:
+            return 0
+    return 0
+
+
+
+
+
+
+

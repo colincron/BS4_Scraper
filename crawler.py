@@ -1,6 +1,6 @@
 import sys
-from classes import Domain
-from functions import timestamp, request_and_parse, print_error
+from functions import (timestamp, request_and_parse,
+                       get_domain_names)
 
 def main_crawler(start_url):
     url_list = [start_url,]
@@ -13,24 +13,7 @@ def main_crawler(start_url):
         print(timestamp() + " Now searching: " + url)
         
         anchors = request_and_parse(url)
-        try:
-            for a in anchors:
-                references = [a["href"]]
-                for r in references:
-                    if r.startswith("http") and r not in url_list:
-                        url_list.append(r)
-                        tld_list = (".com",".gov/",".net/",".edu/",".org/",".io/",".co.uk/",".ie/",".info/")
-                        if r.endswith(tld_list):
-                            d = Domain(r)
-                            d.add_server_info()
-                            d.get_ip_address()
-                            d.check_db_for_domain()
-                        elif r.endswith(".txt"):
-                            print("\n\n" + timestamp() + " .txt found! Time to write more code!\n\n")
-                            # TODO
-                            # write a handler for .txt files and other interesting file types
-        except TypeError as err:
-            print_error(str(err))
+        url_list = get_domain_names(anchors,url_list)
         url_list.pop(0)
         i = i + 1
         
