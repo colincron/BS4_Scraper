@@ -1,5 +1,7 @@
 import sqlite3, re, random, sys
 from datetime import datetime
+
+import urllib3.exceptions
 from bs4 import BeautifulSoup
 import socket, requests
 
@@ -32,7 +34,7 @@ def sanitize_url(url):
 def create_request_header():
     choice = random.randint(1, 3)
     if choice == 1:
-        #Mac OS X-based computer using a Firefox browser
+        #MacOS X-based computer using a Firefox browser
         header = {"Accept": "text/html",
                   "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/109.0",
                   "Accept-Encoding": "gzip, deflate, br",
@@ -52,7 +54,7 @@ def create_request_header():
                   "Accept-Encoding": "gzip, deflate, br",
                   "Referer": "127.0.0.1"}
         return header
-
+    return None
 
 def email_scraper(response):
     try:
@@ -99,7 +101,8 @@ def request_and_parse(url):
         response = requests.get(url, headers=create_request_header())
     except (requests.exceptions.ConnectionError, socket.gaierror,
             requests.exceptions.TooManyRedirects, requests.exceptions.InvalidURL,
-            requests.exceptions.ChunkedEncodingError, requests.exceptions.InvalidSchema) as error:
+            requests.exceptions.ChunkedEncodingError, requests.exceptions.InvalidSchema,
+            urllib3.exceptions.LocationParseError) as error:
         print_error("\n" + timestamp() + " " + str(error))
 
     if response:
@@ -186,13 +189,12 @@ def create_db(conn, table_name):
 
 
 def check_db_for_domain(conn, name, table_name):
-    db_result = ""
     print(timestamp() + " Checking for " + name + " in database")
     if table_name == "Domains":
         entry_exists = conn.execute("SELECT DISTINCT url FROM '{}' WHERE url='{}'".format(table_name, name))
         try:
             db_result = str(entry_exists.fetchall()[0]).replace("('", "").replace("',)", "")
-        except IndexError as err:
+        except IndexError:
             return True
         if db_result == name:
             print("\n" + timestamp() + " " + name + " is already in DB")
@@ -203,14 +205,14 @@ def check_db_for_domain(conn, name, table_name):
         entry_exists = conn.execute("SELECT DISTINCT email_address FROM '{}' WHERE email_address='{}'".format(table_name, name))
         try:
             db_result = str(entry_exists.fetchall()[0]).replace("('", "").replace("',)", "")
-        except IndexError as err:
+        except IndexError:
             return True
         if db_result == name:
             print("\n" + timestamp() + " " + name + " is already in DB")
             return False
         else:
             return True
-
+    return None
 
 def write_to_domain_database(name, ip, server, content_type, title):
     table_name = "Domains"
