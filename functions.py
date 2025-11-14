@@ -184,7 +184,6 @@ def check_db_for_domain(conn, name):
     # print(str(entry_exists.fetchall()[0]).replace("(","").replace(",)",""))
     try:
         db_result = str(entry_exists.fetchall()[0]).replace("('","").replace("',)","")
-        print("VISUAL COMPARE: " + db_result + " " + name)
     except IndexError as err:
         print_error(err)
     if db_result == name:
