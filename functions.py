@@ -86,8 +86,11 @@ def email_scraper(response):
         emails.update(all_emails)
 
         for email in emails:
-            print("Found email: " + email)
-            write_to_email_database(email)
+            if len(email) >= 70:
+                return
+            else:
+                print("Found email: " + email)
+                write_to_email_database(email)
     except (requests.exceptions.ConnectionError,
             requests.exceptions.TooManyRedirects) as err:
         print_error(err)
