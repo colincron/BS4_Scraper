@@ -56,6 +56,7 @@ def create_request_header():
         return header
     return None
 
+
 def email_scraper(response):
     try:
         # response = requests.get(url)
@@ -86,9 +87,6 @@ def email_scraper(response):
 
         for email in emails:
             print("Found email: " + email)
-            # file1 = open("emails.txt", "a")
-            # file1.write(email + "\n")
-            # file1.close()
             write_to_email_database(email)
     except (requests.exceptions.ConnectionError,
             requests.exceptions.TooManyRedirects) as err:
@@ -214,6 +212,7 @@ def check_db_for_domain(conn, name, table_name):
             return True
     return None
 
+
 def write_to_domain_database(name, ip, server, content_type, title):
     table_name = "Domains"
     conn = sqlite3.connect("ScrapeDB", isolation_level=None)
@@ -240,10 +239,9 @@ def write_to_email_database(email_address):
         try:
             conn.execute(sql)
             print(timestamp() + " " + email_address + " saved to database")
+        except sqlite3.OperationalError:
             return
-        finally:
-            return 0
-    return 0
+    return
 
 
 def main_crawler(start_url):
