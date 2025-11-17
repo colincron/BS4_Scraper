@@ -1,6 +1,5 @@
-import sqlite3, re, random, sys
+import sqlite3, re, random, sys, socket
 from datetime import datetime
-
 import urllib3.exceptions
 from bs4 import BeautifulSoup
 import socket, requests
@@ -58,43 +57,12 @@ def create_request_header():
 
 
 def email_scraper(response):
-    try:
-        # response = requests.get(url)
-        soup = BeautifulSoup(response.text, "lxml")
-
-        emails = set()
-        for link in soup.find_all('a', href=True):
-            if 'mailto:' in link['href']:
-                email = link['href'].replace('mailto:', '').strip()
-                emails.add(email)
-
-        # Method 2: Search in all text content AND attributes
-        for tag in soup.find_all(True):
-            # Check tag text
-            if tag.string:
-                found_emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[com]+', tag.string)
-                emails.update(found_emails)
-
-            # Check all attributes
-            for attr_value in tag.attrs.values():
-                if isinstance(attr_value, str):
-                    found_emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[com]+', attr_value)
-                    emails.update(found_emails)
-
-        # Method 3: Search the raw HTML (most comprehensive)
-        all_emails = set(re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[com]+', response.text))
-        emails.update(all_emails)
-
+    email_pattern = r"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$"
+    parsed_data = BeautifulSoup(response.content, "lxml")
+    emails = parsed_data.find_all(string=re.compile(email_pattern))
+    if len(emails) > 0:
         for email in emails:
-            if len(email) >= 70:
-                return
-            else:
-                print("Found email: " + email)
-                write_to_email_database(email)
-    except (requests.exceptions.ConnectionError,
-            requests.exceptions.TooManyRedirects) as err:
-        print_error(err)
-
+            write_to_email_database(email)
 
 def request_and_parse(url):
     response = ""
