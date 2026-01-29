@@ -2,3 +2,5 @@ env
 __pycache__
 config.py  
 .vscode
+ScrapeDB
+*.db
